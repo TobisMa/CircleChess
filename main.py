@@ -2,7 +2,6 @@
 import math
 from typing import Optional, Tuple
 import pygame
-from torch import TracingState
 from polar_coordinate import PolarCoordinate
 from circle_chess import ChesssBoard, GameState, FILES, RANKS, does_tile_exist
 
