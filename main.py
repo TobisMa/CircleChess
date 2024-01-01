@@ -2,6 +2,7 @@
 import math
 from typing import Optional, Tuple
 import pygame
+from torch import TracingState
 from polar_coordinate import PolarCoordinate
 from circle_chess import ChesssBoard, GameState, FILES, RANKS, does_tile_exist
 
@@ -44,7 +45,7 @@ def draw_board(screen: pygame.Surface, highlight: Optional[Tuple[int, int]], sel
                 elif highlight is not None and (file, rank) == highlight:
                     color = [255, 0, 0]
                 else:
-                    color = [209, 153, 100] if file % 2 != rank % 2 else [80, 38, 0]  
+                    color = [209, 153, 100] if file % 2 != rank % 2 else [88, 42, 0]  
 
                 pygame.draw.arc(screen, color, [center_x - radius, center_y - radius, 2 * radius, 2 * radius], file * FILE_ANGLE, (file + 1) * FILE_ANGLE)
 
@@ -71,13 +72,19 @@ def tile_to_polar(tile: Tuple[int, int], screen: pygame.Surface) -> PolarCoordin
 
     
 def draw_pieces(screen: pygame.Surface, game: ChesssBoard):
+    th = tile_height(screen)
     for p in game.white_pieces + game.black_pieces:
         coordinate = tile_to_polar(p.pos, screen)
-        coordinate.r += 0.5 * tile_height(screen)
+        coordinate.r += 0.5 * th
         pyx, pyy = coordinate.to_cartesian(screen)
-        pyx -= p.surface.get_width() // 2
-        pyy -= p.surface.get_height() // 2
-        screen.blit(p.surface, (pyx, pyy))
+
+        surface = p.surface
+        surface = pygame.transform.scale(surface, (th, th))
+
+        pyx -= surface.get_width() // 2
+        pyy -= surface.get_height() // 2
+
+        screen.blit(surface, (pyx, pyy))
 
 
 def circle_chess(screen: pygame.Surface):
@@ -109,12 +116,14 @@ def circle_chess(screen: pygame.Surface):
                         selected = cursor_tile
                         break
                 else:
-                    print(cursor_tile)
-                    print("No piece from the current player")
-
+                    if selected is not None and cursor_tile is not None and selected != cursor_tile:
+                        moved = game.move_piece(selected, cursor_tile)
+                        if moved:
+                            selected = None
+                        else:
+                            print("Invalid move")
         
         draw_board(screen, cursor_hover, selected)
-        
         draw_pieces(screen, game)
 
         pygame.display.flip()
@@ -145,7 +154,7 @@ def main():
             elif event.type == pygame.MOUSEMOTION:
                 x, y = event.pos
             
-            elif event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 # acutal game
                 circle_chess(screen)
                 ...
