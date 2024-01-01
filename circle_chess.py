@@ -286,6 +286,11 @@ class ChesssBoard():
         selected_piece.pos = path[-1]
         self.move_count += 1
         selected_piece.moved = True
+
+        if selected_piece.label.lower() == "p" and selected_piece.pos[1] == 0:
+            print("Promotion of a pawn. For now instant queening. No other possibility")
+            figures.append(Queen(*selected_piece.pos, selected_piece.label.islower(), selected_piece.font))
+            figures.remove(selected_piece)
         
         return True
             
