@@ -122,7 +122,7 @@ class Bishop(Figure):
         r = self.pos[1]
         path = [self.pos]
         while path[-1] != new_pos:
-            if len(path) >= 2:
+            if len(path) >= 1:
                 if new_pos[0] == f or new_pos[1] == r:
                     return []  # can't be a legal move if one of them is hitting the coordinate and the other one doesn't
 
@@ -230,6 +230,8 @@ class ChesssBoard():
         font = pygame.font.Font(pygame.font.get_default_font(), 25)
         font.set_bold(True)
         self.move_count = 0
+        self.checked = None
+        self.winner = None
         self.white_pieces: List[Figure] = [
             Rook(14, 7, True, font),
             Knight(15, 7, True, font),
@@ -245,8 +247,8 @@ class ChesssBoard():
             Rook(2, 7, False, font),
             Knight(3, 7, False, font),
             Bishop(4, 7, False, font),
-            Queen(5, 7, False, font),
-            King(6, 7, False, font),
+            King(5, 7, False, font),
+            Queen(6, 7, False, font),
             Bishop(7, 7, False, font),
             Knight(8, 7, False, font),
             Rook(9, 7, False, font)
@@ -280,19 +282,40 @@ class ChesssBoard():
         
         for p in opp_figures:
             if p.pos == path[-1]:
+                if isinstance(p, King):
+                    print("King is not killable")
+                    return False
+
                 opp_figures.remove(p)        
                 break
-
-        selected_piece.pos = path[-1]
-        self.move_count += 1
-        selected_piece.moved = True
 
         if selected_piece.label.lower() == "p" and selected_piece.pos[1] == 0:
             print("Promotion of a pawn. For now instant queening. No other possibility")
             figures.append(Queen(*selected_piece.pos, selected_piece.label.islower(), selected_piece.font))
             figures.remove(selected_piece)
+
+        selected_piece.pos = path[-1]
+
+        self.check_checkmate(figures, opp_figures, next(filter(lambda x: x.label.lower() == "k", opp_figures)))
+        
+        self.move_count += 1
+        selected_piece.moved = True
+
         
         return True
+
+    def check_checkmate(self, figures: List[Figure], opp_figures: List[Figure], king: King):
+        for f in figures:
+            path = f.move_path(king.pos, opp_figures, figures)
+            if path:
+                self.checked = path[-1]
+                print("Schach " + king.label)
+                break
+        else:
+            self.checked = None
+
+        print("Checked:", self.checked)
+            
             
     def get_player(self):
         return self.move_count % 2

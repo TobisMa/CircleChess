@@ -18,6 +18,13 @@ FILE_ANGLE = math.pi / FILES
 TITLE_SCREEN_TEXT = "Welcome to circular Chess!!"
 
 
+COLOR_CHECKED = pygame.Color(255, 0, 0)
+COLOR_MOUSEOVER = pygame.Color(120, 120, 255)
+COLOR_SELECTED_PIECE = pygame.Color(0, 0, 255)
+COLOR_LIGHT_SQUARE = pygame.Color(209, 153, 100)
+COLOR_DARK_SQUARE = pygame.Color(88, 42, 0)
+
+
 def pygame_coor_to_polar(screen: pygame.Surface, x: int, y: int, scale=1) -> PolarCoordinate:
     width, height = screen.get_size()
     return scale * PolarCoordinate.from_cartesian(x - width // 2, y - height // 2)
@@ -26,7 +33,7 @@ def pygame_coor_to_polar(screen: pygame.Surface, x: int, y: int, scale=1) -> Pol
 def tile_height(screen: pygame.Surface):
     return (screen.get_height() // 2) / (RANKS + BOARD_CENTER_OFFSET / RANK_SIZE)
 
-def draw_board(screen: pygame.Surface, highlight: Optional[Tuple[int, int]], selected: Optional[Tuple[int, int]] = None):
+def draw_board(screen: pygame.Surface, highlight: Optional[Tuple[int, int]], selected: Optional[Tuple[int, int]] = None, check_field = None):
     center_x, center_y = screen.get_size()
     center_x //= 2
     center_y //= 2
@@ -38,14 +45,16 @@ def draw_board(screen: pygame.Surface, highlight: Optional[Tuple[int, int]], sel
             radius_in = rank * tile_height(screen) + BOARD_CENTER_OFFSET
             radius_out = (rank + 1) * tile_height(screen) + BOARD_CENTER_OFFSET
 
-            for radius in range(int(radius_in), int(radius_out)):
-                if selected is not None and (file, rank) == selected:
-                    color = [0, 0, 255]
-                elif highlight is not None and (file, rank) == highlight:
-                    color = [255, 0, 0]
-                else:
-                    color = [209, 153, 100] if file % 2 != rank % 2 else [88, 42, 0]  
+            if check_field is not None and (file, rank) == check_field:
+                color = COLOR_CHECKED
+            elif selected is not None and (file, rank) == selected:
+                color = COLOR_SELECTED_PIECE
+            elif highlight is not None and (file, rank) == highlight:
+                color = COLOR_MOUSEOVER
+            else:
+                color = COLOR_LIGHT_SQUARE if file % 2 != rank % 2 else COLOR_DARK_SQUARE
 
+            for radius in range(int(radius_in), int(radius_out)):
                 pygame.draw.arc(screen, color, [center_x - radius, center_y - radius, 2 * radius, 2 * radius], file * FILE_ANGLE, (file + 1) * FILE_ANGLE)
 
 def polar_to_tile(polar: PolarCoordinate, screen: pygame.Surface, scale=RANK_SIZE, offset=BOARD_CENTER_OFFSET, angle_section=FILE_ANGLE) -> Optional[Tuple[int, int]]:
@@ -122,15 +131,16 @@ def circle_chess(screen: pygame.Surface):
                         else:
                             print("Invalid move")
         
-        draw_board(screen, cursor_hover, selected)
+        draw_board(screen, cursor_hover, selected, check_field=game.checked)
         draw_pieces(screen, game)
 
-        pygame.display.flip()
+        pygame.display.update()
 
         clock.tick(60)
     
     return winner
-    
+
+
 def main():
     pygame.init()
 

@@ -4,5 +4,5 @@ Pieces move like in normal chess, but the board is tweaked in such a way that is
 # Missing Features
 - castling
 - selecting the piece when promoting a pawn. Currently pawn instantly promote to a queen
-- checking for check
+- checking for check (visuals implemented). Does not enforce a move yet
 - checking for checkmate
