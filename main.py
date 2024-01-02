@@ -52,7 +52,7 @@ def draw_board(screen: pygame.Surface, highlight: Optional[Tuple[int, int]], sel
             elif highlight is not None and (file, rank) == highlight:
                 color = COLOR_MOUSEOVER
             else:
-                color = COLOR_LIGHT_SQUARE if file % 2 != rank % 2 else COLOR_DARK_SQUARE
+                color = COLOR_LIGHT_SQUARE if file % 2 == rank % 2 else COLOR_DARK_SQUARE
 
             for radius in range(int(radius_in), int(radius_out)):
                 pygame.draw.arc(screen, color, [center_x - radius, center_y - radius, 2 * radius, 2 * radius], file * FILE_ANGLE, (file + 1) * FILE_ANGLE)
